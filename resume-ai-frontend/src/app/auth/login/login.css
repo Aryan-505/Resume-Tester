@@ -1,0 +1,75 @@
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Now uses the global theme variable instead of hardcoded gray */
+  background-color: var(--bg-color); 
+  transition: background-color 0.4s ease;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Use the theme variable for labels so they remain visible in dark mode */
+.field label {
+  font-weight: 600;
+  color: var(--text-main); 
+}
+
+.w-full {
+  width: 100%;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Add this to your existing SCSS */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  &::before { margin-right: .5em; }
+  &::after { margin-left: .5em; }
+}
+
+.mb-4 { margin-bottom: 1.5rem; }
+
+.auth-footer p {
+  margin: 0;
+  color: #64748b;
+
+  a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

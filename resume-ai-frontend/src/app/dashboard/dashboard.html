@@ -1,0 +1,130 @@
+<p-toast></p-toast>
+
+<div class="dashboard-container">
+  <nav class="navbar animate-slide-up">
+    <div class="logo">
+      <i class="pi pi-bolt" style="color: #3b82f6; font-size: 1.5rem;"></i>
+      <h2>ResumeAI</h2>
+    </div>
+    <div class="nav-actions">
+      <p-button [icon]="isDarkMode ? 'pi pi-sun' : 'pi pi-moon'" 
+                styleClass="p-button-rounded p-button-text p-button-secondary" 
+                (onClick)="toggleTheme()" 
+                pTooltip="Toggle Theme"></p-button>
+      
+      <p-button label="Sign Out" icon="pi pi-sign-out" styleClass="p-button-text p-button-danger font-semibold" (onClick)="logout()"></p-button>
+    </div>
+  </nav>
+
+  <main class="content">
+    
+    <p-card header="Start New Analysis" styleClass="mb-4 animate-slide-up delay-1 custom-header-card">
+      <div class="upload-area">
+        <p-fileUpload 
+          #fileUploader
+          mode="advanced" 
+          chooseLabel="Select Resume (PDF/DOCX)" 
+          [showUploadButton]="false"
+          [showCancelButton]="true"
+          (onSelect)="onFileSelect($event)"
+          (onClear)="onFileRemove()"
+          (onRemove)="onFileRemove()"
+          accept=".pdf,.doc,.docx" 
+          maxFileSize="5000000">
+        </p-fileUpload>
+
+        <div class="start-action-container" *ngIf="stagedFile">
+            <p-button label="Start Analyzing Resume" 
+                      icon="pi pi-sparkles" 
+                      size="large" 
+                      styleClass="p-button-primary pulse-btn w-full" 
+                      (onClick)="startAnalysis(fileUploader)">
+            </p-button>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card header="Your Analysis History" styleClass="animate-slide-up delay-2 custom-header-card">
+      <p-table [value]="resumes" [loading]="isLoading" [paginator]="true" [rows]="5" responsiveLayout="scroll" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>File Name</th>
+            <th>Uploaded Date</th>
+            <th>ATS Score</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-resume>
+          <tr>
+            <td class="font-medium">{{ resume.originalFileName }}</td>
+            <td style="color: var(--text-muted);">{{ resume.createdAt | date:'mediumDate' }}</td>
+            <td>
+              <span *ngIf="resume.atsScore != null; else noScore" class="score-badge" [ngClass]="{'high-score': resume.atsScore >= 80, 'med-score': resume.atsScore < 80}">
+                <i class="pi pi-chart-pie mr-1"></i> {{ resume.atsScore }}/100
+              </span>
+              <ng-template #noScore>
+                <span class="pending-badge"><i class="pi pi-spin pi-spinner mr-1"></i> Processing</span>
+              </ng-template>
+            </td>
+            <td style="text-align: right;">
+              <p-button icon="pi pi-sparkles" styleClass="p-button-rounded p-button-text p-button-success" pTooltip="View AI Insights" (onClick)="showAnalysis(resume)"></p-button>
+              <a [href]="resume.fileUrl" target="_blank" style="text-decoration: none; margin-left: 0.5rem;">
+                <p-button icon="pi pi-file-pdf" styleClass="p-button-rounded p-button-text p-button-info" pTooltip="View File"></p-button>
+              </a>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="empty-state">
+               <i class="pi pi-folder-open" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+               <p>No resumes uploaded yet. Upload your first resume to get started!</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </main>
+</div>
+
+<p-dialog [(visible)]="isAnalyzing" [modal]="true" [closable]="false" [draggable]="false" [resizable]="false" styleClass="analyzing-dialog">
+    <div class="analyzing-content">
+        <div class="spinner-wrapper">
+             <p-progressSpinner styleClass="custom-spinner" strokeWidth="4" animationDuration="1s"></p-progressSpinner>
+             <i class="pi pi-sparkles absolute-center-icon"></i>
+        </div>
+        <h2 class="mt-4 mb-2">Analyzing Resume...</h2>
+        <p style="color: var(--text-muted); text-align: center; max-width: 300px;">
+            Our AI is currently scanning your document, extracting skills, and generating tailored suggestions. This usually takes a few seconds.
+        </p>
+    </div>
+</p-dialog>
+
+<p-dialog header="AI Resume Insights" [(visible)]="displayAnalysis" [style]="{width: '60vw'}" [breakpoints]="{'960px': '90vw'}" [modal]="true" [draggable]="false" styleClass="results-dialog">
+    <div *ngIf="selectedResume" class="analysis-content">
+        <h3 style="color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+            ATS Score: {{ selectedResume.atsScore }} / 100
+        </h3>
+        
+        <h4 style="color: var(--text-main); margin-top: 1.5rem;"><i class="pi pi-check-circle" style="color: #22c55e;"></i> Verified Skills</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <span *ngFor="let skill of selectedResume?.skillsExtracted" class="skill-tag">
+                {{ skill }}
+            </span>
+        </div>
+
+        <h4 style="color: var(--text-main); margin-top: 1.5rem;"><i class="pi pi-exclamation-triangle" style="color: #eab308;"></i> Missing Industry Skills</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <span *ngFor="let skill of selectedResume?.missingSkills" class="skill-tag missing">
+                {{ skill }}
+            </span>
+        </div>
+
+        <h4 style="color: var(--text-main); margin-top: 1.5rem;"><i class="pi pi-bolt" style="color: #3b82f6;"></i> Improvement Suggestions</h4>
+        <ul style="line-height: 1.6; color: var(--text-muted);">
+            <li *ngFor="let suggestion of selectedResume?.suggestions" style="margin-bottom: 0.5rem;">
+                {{ suggestion }}
+            </li>
+        </ul>
+    </div>
+</p-dialog>

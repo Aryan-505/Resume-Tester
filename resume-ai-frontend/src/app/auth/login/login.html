@@ -1,0 +1,28 @@
+<div class="auth-container">
+  <p-card header="Welcome Back" [style]="{ width: '400px', padding: '1rem' }">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <p-password id="password" formControlName="password" [toggleMask]="true" styleClass="w-full" [inputStyle]="{'width':'100%'}"></p-password>
+      </div>
+
+      <p-button label="Log In" type="submit" styleClass="w-full mt-3" [disabled]="loginForm.invalid || isLoading"></p-button>
+      
+    </form>
+    
+    <div class="divider mt-4 mb-4">
+      <span>OR</span>
+    </div>
+
+    <div id="google-btn-container" class="w-full flex justify-content-center"></div>
+    <div class="auth-footer mt-4 text-center">
+      <p>Don't have an account? <a routerLink="/register">Sign up</a></p>
+    </div>
+  </p-card>
+</div>
